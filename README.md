@@ -1,4 +1,5 @@
-# django-react-logrocket
+# React App + Django API
+
 A simple integration between Django API and React App
 
 This project is made up of two main ones:
