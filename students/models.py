@@ -1,7 +1,10 @@
 from django.db import models
+import uuid
+
 
 class Student(models.Model):
-    name = models.CharField("Name", max_length=240)
+    student_id = models.CharField(primary_key=True, default=uuid.uuid4, max_length=37, editable=False)
+    name = models.CharField(max_length=240)
     email = models.EmailField()
     document = models.CharField("Document", max_length=20)
     phone = models.CharField(max_length=20)
