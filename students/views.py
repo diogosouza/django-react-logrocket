@@ -1,41 +1,44 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
-from rest_framework import status
-
 from .models import Student
 from .serializers import *
+from rest_framework.generics import ListCreateAPIView
+from rest_framework.views import APIView
+from .pagination import *
 
-@api_view(['GET', 'POST'])
-def students_list(request):
-    if request.method == 'GET':
-        data = Student.objects.all()
 
-        serializer = StudentSerializer(data, context={'request': request}, many=True)
 
-        return Response(serializer.data)
+class StudentListView(ListCreateAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+    pagination_class = StudentSetPagination
 
-    elif request.method == 'POST':
-        serializer = StudentSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(status=status.HTTP_201_CREATED)
-            
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['PUT', 'DELETE'])
-def students_detail(request, pk):
-    try:
-        student = Student.objects.get(pk=pk)
-    except Student.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.method == 'PUT':
-        serializer = StudentSerializer(student, data=request.data,context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class StudentDetailView(APIView):
+    def put(self, request, student_id):
+        try:
+            student = Student.objects.get(student_id=student_id)
+            if student:
+                serializer = StudentSerializer(student, data=request.data, partial=True)
 
-    elif request.method == 'DELETE':
-        student.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(status=200)
+
+            return Response(status=404)
+        except Exception:
+            return Response(status=400)
+
+    def delete(self, request, student_id):
+        try:
+            student = Student.objects.get(student_id=student_id)
+
+            if student:
+                student.delete()
+
+            return Response(status=200)
+
+        except Exception:
+            return Response(status=400)
+
+
